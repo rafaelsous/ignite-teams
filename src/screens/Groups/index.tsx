@@ -1,9 +1,11 @@
-import { Container, Title } from './styles'
+import { Header } from '@components/Header';
+
+import { Container } from './styles'
 
 export function Groups() {
   return (
     <Container>
-      <Title>Groups Screen with Roboto</Title>
+      <Header />
     </Container>
   );
 }
