@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FlatList } from 'react-native'
+import { useRoute } from '@react-navigation/native'
 
 import { Header } from '@components/Header'
 import { Highlight } from '@components/Highlight'
@@ -14,12 +15,19 @@ import { FILTERS, PLAYERS } from '@utils/index'
 
 import { Container, Form, HeaderList, PlayersCounter } from './styles'
 
+type RouteParams = {
+  group: string
+}
+
 export function Players() {
   const [selectedFilter, setSelectedFilter] = useState(FILTERS[0])
   const [players, setPlayers] = useState([
     ...PLAYERS, 
     ...['Raquel', 'Railias Sousa', 'Rayane Lima', 'Jorge Luís']
   ])
+
+  const { params } = useRoute()
+  const { group } = params as RouteParams
 
   function handlePlayerRemove(playerName: string) {
     setPlayers(prevState => prevState.filter(player => player !== playerName))
@@ -30,7 +38,7 @@ export function Players() {
       <Header showBackButton />
       
       <Highlight
-        title="Nome da turma"
+        title={group}
         subtitle="Adicione a galera e separe os times"
       />
 

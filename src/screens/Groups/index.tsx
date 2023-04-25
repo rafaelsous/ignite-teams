@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import { Header } from '@components/Header';
 import { Highlight } from '@components/Highlight';
@@ -11,6 +12,16 @@ import { Container } from './styles'
 
 export function Groups() {
   const [groups, setGroups] = useState<string[]>(['Turma 01', 'Turma 02', 'Turma 03', 'Turma 04', 'Turma 05', 'Turma 06'])
+
+  const { navigate } = useNavigation();
+
+  function handleNavigateToNewGroup() {
+    navigate('new')
+  }
+
+  function handleNavigateToGroup(group: string) {
+    navigate('players', { group })
+  }
 
   return (
     <Container>
@@ -28,6 +39,7 @@ export function Groups() {
         renderItem={({ item }) => (
           <GroupCard
             name={item}
+            onPress={() => handleNavigateToGroup(item)}
           />
         )}
         contentContainerStyle={[
@@ -42,7 +54,10 @@ export function Groups() {
         showsVerticalScrollIndicator={false}
       />
 
-      <Button title="Criar nova turma" />
+      <Button
+        title="Criar nova turma"
+        onPress={handleNavigateToNewGroup}
+      />
     </Container>
   );
 }
