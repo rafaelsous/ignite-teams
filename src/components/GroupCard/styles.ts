@@ -2,9 +2,7 @@ import { TouchableOpacity } from 'react-native'
 import styled, { css } from 'styled-components/native'
 import { UsersThree } from 'phosphor-react-native'
 
-export const Container = styled(TouchableOpacity).attrs(() => ({
-  activeOpacity: 0.7
-}))`
+export const Container = styled(TouchableOpacity)`
   width: 100%;
   height: 88px;
   margin-bottom: 12px;
