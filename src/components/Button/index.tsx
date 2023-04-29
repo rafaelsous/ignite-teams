@@ -3,7 +3,7 @@ import { TouchableOpacityProps } from 'react-native'
 import { ButtonTypeStyleProps, Container, Title } from './styles'
 
 type ButtonProps = TouchableOpacityProps & {
-  title: string;
+  title: string
   type?: ButtonTypeStyleProps
 }
 
