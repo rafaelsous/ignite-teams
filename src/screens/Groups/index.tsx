@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+
+import { groupsGetAll } from '@storage/group/groupsGetAll';
 
 import { Header } from '@components/Header';
 import { Highlight } from '@components/Highlight';
@@ -11,7 +13,7 @@ import { Button } from '@components/Button';
 import { Container } from './styles'
 
 export function Groups() {
-  const [groups, setGroups] = useState<string[]>(['Turma 01', 'Turma 02', 'Turma 03', 'Turma 04', 'Turma 05', 'Turma 06'])
+  const [groups, setGroups] = useState<string[]>([])
 
   const { navigate } = useNavigation();
 
@@ -22,6 +24,23 @@ export function Groups() {
   function handleNavigateToGroup(group: string) {
     navigate('players', { group })
   }
+
+  async function fetchGroups() {
+    try {
+      const storedGroups = await groupsGetAll()
+      setGroups(storedGroups)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  function handleGroupAdd() {
+    setGroups(prevState => [...prevState])
+  }
+
+  useFocusEffect(useCallback(() => {
+    fetchGroups()
+  }, []))
 
   return (
     <Container>
