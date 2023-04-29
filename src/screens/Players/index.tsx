@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { Alert, FlatList, TextInput } from 'react-native'
-import { useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 
 import { Header } from '@components/Header'
 import { Highlight } from '@components/Highlight'
@@ -10,13 +10,16 @@ import { ButtonIcon } from '@components/ButtonIcon'
 import { Filter } from '@components/Filter'
 import { EmptyList } from '@components/EmptyList'
 import { PlayerCard } from '@components/PlayerCard'
+import { Loading } from '@components/Loading'
 
-import { playerAddByGroup } from '@storage/player/playerAddByGroup'
 import { FILTERS } from '@utils/index'
 import { AppError } from '@utils/AppError'
 
+import { playerAddByGroup } from '@storage/player/playerAddByGroup'
 import { playersGetByGroupAndTeam } from '@storage/player/playersGetByGroupAndTeam'
 import { PlayerStorageDTO } from '@storage/player/PlayerStorageDTO'
+import { playerDeleteByGroup } from '@storage/player/playerDeleteByGroup'
+import { groupDeleteByName } from '@storage/group/groupDeleteByName'
 
 import { Container, Form, HeaderList, PlayersCounter } from './styles'
 
@@ -25,6 +28,7 @@ type RouteParams = {
 }
 
 export function Players() {
+  const [isLoading, setIsLoading] = useState(true)
   const [team, setTeam] = useState(FILTERS[0])
   const [players, setPlayers] = useState<PlayerStorageDTO[]>([])
   const [newPlayerName, setNewPlayerName] = useState('')
@@ -33,6 +37,8 @@ export function Players() {
 
   const { params } = useRoute()
   const { group } = params as RouteParams
+
+  const { navigate } = useNavigation()
 
   async function handlePlayerAdd() {
     if (newPlayerName.trim().length === 0) {
@@ -61,16 +67,53 @@ export function Players() {
 
   async function fetchPlayersByTeam() {
     try {
+      setIsLoading(true)
+
       const playersByTeam = await playersGetByGroupAndTeam(group, team)
       setPlayers([...playersByTeam])
     } catch (error) {
       console.log(error)
       Alert.alert("Participantes", "Não foi possível carregar os participantes do time selecionado.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  function handlePlayerRemove(playerName: string) {
-    setPlayers(prevState => prevState.filter(player => player.name !== playerName))
+  async function handlePlayerRemove(playerName: string) {
+    try {
+      await playerDeleteByGroup(playerName, group);
+      await fetchPlayersByTeam()
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Remover Participante", "Não foi possível remover o participante")
+    }
+  }
+
+  async function groupRemove() {
+    try {
+      await groupDeleteByName(group)
+      navigate('groups')
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Remover Turma", "Não foi possível remover a turma")
+    }
+  }
+
+  async function handleGroupRemove() {
+    Alert.alert(
+      "Remover Turma",
+      "Deseja realmente remover a turma?",
+      [
+        {
+          text: "Sim",
+          onPress: groupRemove
+        },
+        {
+          text: "Não",
+          style: "cancel"
+        }
+      ]
+    )
   }
 
   useEffect(() => {
@@ -124,30 +167,37 @@ export function Players() {
         <PlayersCounter>{players.length}</PlayersCounter>
       </HeaderList>
 
-      <FlatList
-        data={players}
-        keyExtractor={item => item.name}
-        renderItem={({ item }) => (
-          <PlayerCard
-            name={item.name}
-            onRemove={() => handlePlayerRemove(item.name)}
+      {
+        isLoading 
+        ? <Loading /> 
+        : (
+          <FlatList
+            data={players}
+            keyExtractor={item => item.name}
+            renderItem={({ item }) => (
+              <PlayerCard
+                name={item.name}
+                onRemove={() => handlePlayerRemove(item.name)}
+              />
+            )}
+            ListEmptyComponent={
+              <EmptyList
+                message="Cadastre o primeiro participante do seu time."
+              />
+            }
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              { paddingBottom: 100 },
+              players.length === 0 && { flex: 1 }
+            ]}
           />
-        )}
-        ListEmptyComponent={
-          <EmptyList
-            message="Cadastre o primeiro participante do seu time."
-          />
-        }
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          { paddingBottom: 100 },
-          players.length === 0 && { flex: 1 }
-        ]}
-      />
+        )
+      } 
 
       <Button
         type="SECONDARY"
-        title="Remover turma" 
+        title="Remover turma"
+        onPress={handleGroupRemove}
       />
     </Container>
   )
