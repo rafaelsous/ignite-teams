@@ -34,10 +34,6 @@ export function Groups() {
     }
   }
 
-  function handleGroupAdd() {
-    setGroups(prevState => [...prevState])
-  }
-
   useFocusEffect(useCallback(() => {
     fetchGroups()
   }, []))
